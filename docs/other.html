@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Reader and Speller</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #wordList {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        #wordList div {
+            margin: 5px 0;
+        }
+        button {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Word Reader and Speller</h1>
+    <div id="wordList"></div>
+    <button onclick="readWord()">Read</button>
+    <button onclick="spellWord()">Spell</button>
+
+    <script>
+        const words = [
+            "spaghetti", "yesterday", "brainstorm", "calculator", "categories", "classmates", "comprehend", "contribute", "correction", "exchanging",
+            "headphones", "illustrate", "overcoming", "mechanical", "mysterious", "suggestion", "unscramble", "vocabulary", "accordingly", "affirmative",
+            "comfortable", "demonstrate", "development", "differences", "environment", "imagination", "incorrectly", "information", "magnificent", "performance",
+            "preparation", "questioning", "stomachache", "triceratops", "aggressively", "alphabetical", "characterize", "congratulate", "construction", "conversation",
+            "descriptions", "disabilities", "disappearing", "explanation", "individually", "pterodactyls", "similarities", "successfully", "supermarkets", "strawberries",
+            "odd", "zoo", "alive", "curl", "felt", "gain", "dawn", "dear", "gold", "path",
+            "safe", "roof", "aunt", "self", "tuna", "few", "zero", "world", "wait", "uncle",
+            "visit", "cheer", "jaw", "paper", "sharp", "sink", "twice", "middle", "paste", "animal",
+            "chicken", "banana", "earth", "fever", "follow", "crow", "giant", "degree", "useful", "zebra",
+            "cottage", "couch", "evening", "crumb", "decide", "camera", "garden", "false", "gasoline", "fruit"
+        ];
+
+        const wordListDiv = document.getElementById('wordList');
+
+        words.forEach(word => {
+            const wordDiv = document.createElement('div');
+            const radioButton = document.createElement('input');
+            radioButton.type = 'radio';
+            radioButton.name = 'word';
+            radioButton.value = word;
+
+            wordDiv.appendChild(radioButton);
+            wordDiv.appendChild(document.createTextNode(word));
+            wordListDiv.appendChild(wordDiv);
+        });
+
+        function getSelectedWord() {
+            const selectedWord = document.querySelector('input[name="word"]:checked');
+            return selectedWord ? selectedWord.value : null;
+        }
+
+        function readWord() {
+            const word = getSelectedWord();
+            if (word) {
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US'; // Establece el idioma a inglés
+                utterance.rate = 0.5; // Ajusta la velocidad de lectura
+                speechSynthesis.speak(utterance);
+            } else {
+                alert('Please select a word to read.');
+            }
+        }
+
+        function spellWord() {
+            const word = getSelectedWord();
+            if (word) {
+                const letters = word.split('').join(' ');
+                const utterance = new SpeechSynthesisUtterance(letters);
+                utterance.lang = 'en-US'; // Establece el idioma a inglés
+                utterance.rate = 0.5; // Ajusta la velocidad de lectura
+                speechSynthesis.speak(utterance);
+            } else {
+                alert('Please select a word to spell.');
+            }
+        }
+    </script>
+</body>
+</html>
