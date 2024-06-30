@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Practice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        #result, #finalResult {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #finalResult {
+            display: none;
+        }
+        #wordNumber {
+            margin-top: 10px;
+            font-size: 20px;
+        }
+        #allWords {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Word Practice</h1>
+    <button id="next">Next</button>
+    <button id="try">Try</button>
+    <button id="evaluate">Evaluate</button>
+    <button id="repeat">Repeat</button>
+    <div id="wordNumber"></div>
+    <div id="result"></div>
+    <div id="finalResult">
+        <h2>Results</h2>
+        <div id="wordResults"></div>
+        <button id="show">Show</button>
+    </div>
+    <button id="showAll">Show all</button>
+    <div id="allWords"></div>
+
+    <script>
+        const words = [
+            "spaghetti", "yesterday", "brainstorm", "calculator", "categories", "classmates", "comprehend", "contribute", "correction", "exchanging",
+            "headphones", "illustrate", "overcoming", "mechanical", "mysterious", "suggestion", "unscramble", "vocabulary", "accordingly", "affirmative",
+            "comfortable", "demonstrate", "development", "differences", "environment", "imagination", "incorrectly", "information", "magnificent", "performance",
+            "preparation", "questioning", "stomachache", "triceratops", "aggressively", "alphabetical", "characterize", "congratulate", "construction", "conversation",
+            "descriptions", "disabilities", "disappearing", "explanation", "individually", "pterodactyls", "similarities", "successfully", "supermarkets", "strawberries",
+            "odd", "zoo", "alive", "curl", "felt", "gain", "dawn", "dear", "gold", "path",
+            "safe", "roof", "aunt", "self", "tuna", "few", "zero", "world", "wait", "uncle",
+            "visit", "cheer", "jaw", "paper", "sharp", "sink", "twice", "middle", "paste", "animal",
+            "chicken", "banana", "earth", "fever", "follow", "crow", "giant", "degree", "useful", "zebra",
+            "cottage", "couch", "evening", "crumb", "decide", "camera", "garden", "false", "gasoline", "fruit",
+        ];
+
+        let currentWord = '';
+        let spokenWords = ['', '', ''];
+        let correctWords = [];
+        let currentIndex = 0;
+        let recognition;
+        let recognitionActive = false;
+        let wordResults = [];
+        let attempt = 0;
+
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+            recognition.onresult = function(event) {
+                spokenWords[attempt] = event.results[0][0].transcript.trim().toLowerCase();
+            };
+            recognition.onend = function() {
+                recognitionActive = false;
+            };
+        } else {
+            alert('Speech recognition not supported in this browser. Please use Google Chrome.');
+        }
+
+        document.getElementById('next').addEventListener('click', () => {
+            currentWord = words[Math.floor(Math.random() * words.length)];
+            spokenWords = ['', '', ''];
+            readWord(currentWord);
+            document.getElementById('wordNumber').textContent = `Word ${currentIndex + 1} of 20`;
+        });
+
+        document.getElementById('try').addEventListener('click', () => {
+            if (recognitionActive) return;
+            recognitionActive = true;
+            recognition.start();
+            attempt = (attempt + 1) % 3;  // Cycle between 0, 1, and 2
+        });
+
+        document.getElementById('evaluate').addEventListener('click', () => {
+            if (recognitionActive) {
+                recognition.stop();
+            }
+            evaluateWord();
+        });
+
+        document.getElementById('repeat').addEventListener('click', () => {
+            if (currentWord) {
+                readWord(currentWord);
+            }
+        });
+
+        document.getElementById('show').addEventListener('click', () => {
+            showResults();
+        });
+
+        document.getElementById('showAll').addEventListener('click', () => {
+            showAllWords();
+        });
+
+        function readWord(word) {
+            const synth = window.speechSynthesis;
+            const utterThis = new SpeechSynthesisUtterance(word);
+            utterThis.lang = 'en-US';
+            synth.speak(utterThis);
+        }
+
+        function spellWord(word) {
+            const synth = window.speechSynthesis;
+            for (let i = 0; i < word.length; i++) {
+                const utterThis = new SpeechSynthesisUtterance(word[i]);
+                utterThis.lang = 'en-US';
+                synth.speak(utterThis);
+                setTimeout(() => {}, 500);
+            }
+        }
+
+        function evaluateWord() {
+            const resultDiv = document.getElementById('result');
+            const synth = window.speechSynthesis;
+            resultDiv.innerHTML = '';
+            console.log(spokenWords[0]);
+            console.log(spokenWords[1]);
+            console.log(spokenWords[2]);
+            console.log(currentWord.split('').join(' ') );
+            let spokenWordString = spokenWords.join(', ');
+            if (
+                spokenWords[1] === currentWord.split('').join(' ') 
+                ) {
+                resultDiv.innerHTML = `Correct<br>Correct word: ${currentWord}<br>Spoken: ${spokenWordString}`;
+                correctWords.push(currentWord);
+                wordResults.push({ word: currentWord, correct: true, spoken: spokenWordString });
+            } else {
+                resultDiv.innerHTML = `Incorrect<br>Correct word: ${currentWord}<br>Spoken: ${spokenWordString}`;
+                const utterThis = new SpeechSynthesisUtterance('Incorrect. The correct word is ' + currentWord);
+                utterThis.lang = 'en-US';
+                synth.speak(utterThis);
+                setTimeout(() => {
+                    spellWord(currentWord);
+                    setTimeout(() => {
+                        readWord(currentWord);
+                    }, (currentWord.length * 500) + 1000);
+                }, 1000);
+                wordResults.push({ word: currentWord, correct: false, spoken: spokenWordString });
+            }
+            currentIndex++;
+            if (currentIndex === 20) {
+                document.getElementById('finalResult').style.display = 'block';
+            } else {
+                document.getElementById('wordNumber').textContent = `Word ${currentIndex + 1} of 20`;
+            }
+        }
+
+        function showResults() {
+            const wordResultsDiv = document.getElementById('wordResults');
+            wordResultsDiv.innerHTML = '';
+            wordResults.forEach((result, index) => {
+                const wordResultDiv = document.createElement('div');
+                wordResultDiv.textContent = `${index + 1}. ${result.word} - ${result.correct ? 'Correct' : 'Incorrect'} (Spoken: ${result.spoken})`;
+                const readButton = document.createElement('button');
+                readButton.textContent = 'Read';
+                readButton.addEventListener('click', () => {
+                    readWord(result.word);
+                    setTimeout(() => {
+                        spellWord(result.word);
+                        setTimeout(() => {
+                            readWord(result.word);
+                        }, (result.word.length * 500) + 1000);
+                    }, 1000);
+                });
+                wordResultDiv.appendChild(readButton);
+                wordResultsDiv.appendChild(wordResultDiv);
+            });
+        }
+
+        function showAllWords() {
+            const allWordsDiv = document.getElementById('allWords');
+            allWordsDiv.innerHTML = '';
+            words.forEach((word, index) => {
+                const wordDiv = document.createElement('div');
+                wordDiv.textContent = `${index + 1}. ${word}`;
+                const readButton = document.createElement('button');
+                readButton.textContent = 'Read';
+                readButton.addEventListener('click', () => {
+                    readWord(word);
+                    setTimeout(() => {
+                        spellWord(word);
+                        setTimeout(() => {
+                            readWord(word);
+                        }, (word.length * 500) + 1000);
+                    }, 1000);
+                });
+                wordDiv.appendChild(readButton);
+                allWordsDiv.appendChild(wordDiv);
+            });
+            allWordsDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
