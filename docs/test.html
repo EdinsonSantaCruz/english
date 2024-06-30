@@ -28,6 +28,9 @@
             margin-top: 10px;
             font-size: 20px;
         }
+        #allWords {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -43,6 +46,8 @@
         <div id="wordResults"></div>
         <button id="show">Show</button>
     </div>
+    <button id="showAll">Show all</button>
+    <div id="allWords"></div>
 
     <script>
         const words = [
@@ -111,6 +116,10 @@
 
         document.getElementById('show').addEventListener('click', () => {
             showResults();
+        });
+
+        document.getElementById('showAll').addEventListener('click', () => {
+            showAllWords();
         });
 
         function readWord(word) {
@@ -183,6 +192,29 @@
                 wordResultDiv.appendChild(readButton);
                 wordResultsDiv.appendChild(wordResultDiv);
             });
+        }
+
+        function showAllWords() {
+            const allWordsDiv = document.getElementById('allWords');
+            allWordsDiv.innerHTML = '';
+            words.forEach((word, index) => {
+                const wordDiv = document.createElement('div');
+                wordDiv.textContent = `${index + 1}. ${word}`;
+                const readButton = document.createElement('button');
+                readButton.textContent = 'Read';
+                readButton.addEventListener('click', () => {
+                    readWord(word);
+                    setTimeout(() => {
+                        spellWord(word);
+                        setTimeout(() => {
+                            readWord(word);
+                        }, (word.length * 500) + 1000);
+                    }, 1000);
+                });
+                wordDiv.appendChild(readButton);
+                allWordsDiv.appendChild(wordDiv);
+            });
+            allWordsDiv.style.display = 'block';
         }
     </script>
 </body>
